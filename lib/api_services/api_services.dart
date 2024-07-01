@@ -4,7 +4,6 @@ import 'package:flutter_task/constants/strings.dart';
 import 'package:flutter_task/utils/app_preference.dart';
 import 'package:flutter_task/utils/prefrence_constant.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   Future<dynamic> serviceApi(api, type, perams, context) async {

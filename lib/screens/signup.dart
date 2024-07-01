@@ -1,4 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, prefer_typing_uninitialized_variables
 import 'package:flutter/material.dart';
 import 'package:flutter_task/comman/widgets.dart';
 import 'package:flutter_task/constants/appsizes.dart';
@@ -10,8 +9,6 @@ import 'package:flutter_task/utils/app_preference.dart';
 import 'package:flutter_task/utils/prefrence_constant.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
-
-// import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class TabSignUp extends StatefulWidget {
   const TabSignUp({Key? key}) : super(key: key);

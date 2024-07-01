@@ -6,9 +6,8 @@ import 'package:flutter_task/providers/logout_api_provider.dart';
 import 'package:flutter_task/screens/landingpage.dart';
 import 'package:flutter_task/utils/app_preference.dart';
 import 'package:flutter_task/utils/prefrence_constant.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/signin_api_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,20 +37,47 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  bool loading = true;
+
+  int pageKey = 1;
+  final scorllcon = ScrollController();
+  bool isLoadingmore = false;
+  var data = [];
+
+  Future<void> _scolllisner() async {
+    if (scorllcon.position.pixels == scorllcon.position.maxScrollExtent) {
+      setState(() {
+        isLoadingmore = true;
+      });
+      pageKey = pageKey + 1;
+      await homeapi();
+
+      setState(() {
+        isLoadingmore = false;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     homeapi();
+    scorllcon.addListener(_scolllisner);
   }
 
   homeapi() async {
     var provider = Provider.of<HomeApiProvider>(context, listen: false);
-    await provider.homePostApi(AppStrings.userlistkey, context);
+    await provider.homePostApi(
+        "${AppStrings.userlistkey}?page=$pageKey", context);
 
     if (!provider.isLoading) {
       var response = provider.home_response;
-      if (response.isNotEmpty) {}
+      if (response.isNotEmpty) {
+        data = data + response;
+        loading = false;
+        setState(() {});
+      }
     }
   }
 
@@ -62,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           backgroundColor: Colors.white,
           title: const Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: Center(
               child: Text(
                 'Are you sure you want to logout?',
@@ -77,37 +103,38 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
               child: ElevatedButton(
                 onPressed: () async {
                   logoutapi();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
-                      Color(0xFFa83f4e), // Set the background color
+                      const Color(0xFFa83f4e), // Set the background color
                   foregroundColor:
-                      Color(0xFFa83f4e), // Set the text color to white
-                  padding: EdgeInsets.symmetric(
+                      const Color(0xFFa83f4e), // Set the text color to white
+                  padding: const EdgeInsets.symmetric(
                     horizontal: 50,
                     vertical: 15,
                   ), // Increase horizontal padding
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFa83f4e),
                   ),
-                  minimumSize: Size(double.infinity,
+                  minimumSize: const Size(double.infinity,
                       30), // Increase the minimum width to full screen
                   shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(30.0), // Add rounded corners
-                    side: BorderSide(
+                    side: const BorderSide(
                       color: Color(0xFFa83f4e),
                       width: 2.0,
                     ), // Add rounded corners
                   ),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment:
                       MainAxisAlignment.center, // Center the row content
                   children: [
@@ -125,21 +152,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 10), // Add some space between the icon and text
+            const SizedBox(
+                height: 10), // Add some space between the icon and text
             Center(
               child: InkWell(
                 onTap: () {
                   Navigator.pop(context);
                 },
-                child: Text(
+                child: const Text(
                   'Cancel',
                   style: TextStyle(
                       fontSize: 15, color: Colors.black, fontFamily: 'Poppins'),
                 ),
               ),
             ),
-
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
           ],
         );
       },
@@ -190,76 +217,80 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () {
                           logoutpopup();
                         },
-                        child: Icon(Icons.logout))
+                        child: const Icon(Icons.logout))
                   ],
                 ))),
-        body: Consumer<HomeApiProvider>(builder: (context, data, child) {
-          return data.isLoading
-              ? Container()
-              : Container(
-                  margin: const EdgeInsets.only(left: 15, right: 15),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "User list",
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
+        body: loading
+            ? Center(
+                child: LoadingAnimationWidget.fallingDot(
+                color: Colors.blue,
+                size: 100,
+              ))
+            : Container(
+                margin: const EdgeInsets.only(left: 15, right: 15),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "User list",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
                           ),
-                          Container(
-                            padding: EdgeInsets.only(
-                                left: 10, right: 10, top: 5, bottom: 5),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(width: 1, color: Colors.grey),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(5))),
-                            child: Row(
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    isSelect = true;
-                                    setState(() {});
-                                  },
-                                  child: Image.asset(
-                                    "assets/gridlist.png",
-                                    height: 22,
-                                    color:
-                                        isSelect ? Colors.blue : Colors.black,
-                                  ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.only(
+                              left: 10, right: 10, top: 5, bottom: 5),
+                          decoration: BoxDecoration(
+                              border: Border.all(width: 1, color: Colors.grey),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(5))),
+                          child: Row(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  isSelect = true;
+                                  setState(() {});
+                                },
+                                child: Image.asset(
+                                  "assets/gridlist.png",
+                                  height: 22,
+                                  color: isSelect ? Colors.blue : Colors.black,
                                 ),
-                                gapW16,
-                                InkWell(
-                                  onTap: () {
-                                    isSelect = false;
-                                    setState(() {});
-                                  },
-                                  child: Image.asset(
-                                    "assets/list.png",
-                                    height: 22,
-                                    color:
-                                        !isSelect ? Colors.blue : Colors.black,
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                      gapH12,
-                      isSelect
-                          ? Expanded(
-                              child: GridView.count(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 8.0,
-                                  mainAxisSpacing: 8.0,
-                                  children: List.generate(
-                                      data.home_response.length, (index) {
+                              ),
+                              gapW16,
+                              InkWell(
+                                onTap: () {
+                                  isSelect = false;
+                                  setState(() {});
+                                },
+                                child: Image.asset(
+                                  "assets/list.png",
+                                  height: 22,
+                                  color: !isSelect ? Colors.blue : Colors.black,
+                                ),
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    gapH12,
+                    isSelect
+                        ? Expanded(
+                            child: GridView.count(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 8.0,
+                                controller: scorllcon,
+                                mainAxisSpacing: 8.0,
+                                children: List.generate(
+                                    isLoadingmore
+                                        ? data.length + 1
+                                        : data.length, (index) {
+                                  if (index < data.length) {
                                     return Container(
                                         padding: const EdgeInsets.only(
                                             left: 10, right: 10, top: 20),
@@ -275,8 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              data.home_response[index]
-                                                  ["first_name"],
+                                              data[index]["first_name"],
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
@@ -285,8 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             gapH4,
                                             Text(
-                                              data.home_response[index]
-                                                  ["last_name"],
+                                              data[index]["last_name"],
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
@@ -295,8 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             gapH4,
                                             Text(
-                                              data.home_response[index]
-                                                  ["email"],
+                                              data[index]["email"],
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
@@ -305,8 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ),
                                             gapH4,
                                             Text(
-                                              data.home_response[index]
-                                                  ["phone_no"],
+                                              data[index]["phone_no"],
                                               style: const TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
@@ -342,14 +369,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ))
                                           ],
                                         ));
-                                  })))
-                          : Expanded(
-                              child: ListView.builder(
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: data.home_response.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
+                                  } else {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      ),
+                                    );
+                                  }
+                                })))
+                        : Expanded(
+                            child: ListView.builder(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.vertical,
+                                itemCount: isLoadingmore
+                                    ? data.length + 1
+                                    : data.length,
+                                controller: scorllcon,
+                                itemBuilder: (BuildContext context, int index) {
+                                  if (index < data.length) {
                                     return Container(
                                         margin:
                                             const EdgeInsets.only(bottom: 10),
@@ -378,8 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       MainAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      data.home_response[index]
-                                                          ["first_name"],
+                                                      data[index]["first_name"],
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         fontWeight:
@@ -389,8 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ),
                                                     gapW6,
                                                     Text(
-                                                      data.home_response[index]
-                                                          ["last_name"],
+                                                      data[index]["last_name"],
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         fontWeight:
@@ -404,8 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Row(
                                                   children: [
                                                     Text(
-                                                      data.home_response[index]
-                                                          ["email"],
+                                                      data[index]["email"],
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         fontWeight:
@@ -419,8 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Row(
                                                   children: [
                                                     Text(
-                                                      data.home_response[index]
-                                                          ["phone_no"],
+                                                      data[index]["phone_no"],
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         fontWeight:
@@ -460,10 +493,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ))
                                           ],
                                         ));
-                                  }))
-                    ],
-                  ),
-                );
-        }));
+                                  } else {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      ),
+                                    );
+                                  }
+                                }))
+                  ],
+                ),
+              ));
   }
 }

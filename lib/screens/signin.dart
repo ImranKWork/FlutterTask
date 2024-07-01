@@ -5,7 +5,6 @@ import 'package:flutter_task/constants/appsizes.dart';
 import 'package:flutter_task/constants/colors.dart';
 import 'package:flutter_task/constants/strings.dart';
 import 'package:flutter_task/providers/signin_api_provider.dart';
-import 'package:flutter_task/providers/signup_api_provider.dart';
 import 'package:flutter_task/screens/home.dart';
 import 'package:flutter_task/utils/app_preference.dart';
 import 'package:flutter_task/utils/prefrence_constant.dart';
